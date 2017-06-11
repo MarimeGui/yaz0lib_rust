@@ -1,24 +1,13 @@
+extern crate fancy_read;
+
 use std::str::from_utf8;
 use std::mem;
 use std::io::SeekFrom;
-
-fn read_to_u32_le<T: std::io::Read>(reader: &mut T) -> u32 {
-    let mut temp_read: [u8; 4] = [0; 4];
-    reader.read_exact(&mut temp_read[..]).expect("Failed to read");
-    let temp: [u8; 4] = [temp_read[3], temp_read[2], temp_read[1], temp_read[0]];
-    unsafe {
-        mem::transmute(temp)
-    }
-}
-
-fn read_to_u8<T: std::io::Read>(reader: &mut T) -> u8 {
-    let mut temp: [u8; 1] = [0];
-    reader.read_exact(&mut temp[..]).expect("Failed to read");
-    temp[0]
-}
+use std::io::Read;
+use std::io::Seek;
 
 
-pub fn decompress<T: std::io::Read + std::io::Seek>(reader: &mut T) -> Vec<u8> {
+pub fn decompress<T: Read + Seek>(reader: &mut T) -> Vec<u8> {
     // Checks the Yaz0 Magic Number
     let mut temp: [u8; 4] = [0; 4];
     reader.read_exact(&mut temp[..]).expect("Failed to read");
@@ -28,7 +17,7 @@ pub fn decompress<T: std::io::Read + std::io::Seek>(reader: &mut T) -> Vec<u8> {
     }
 
     // Read the output data size
-    let output_buffer_size: u32 = read_to_u32_le(reader);
+    let output_buffer_size: u32 = fancy_read::read_to_u32_le(reader);
 
     // Go passed the padding
     reader.seek(SeekFrom::Current(8)).expect("Failed to read");
@@ -44,13 +33,13 @@ pub fn decompress<T: std::io::Read + std::io::Seek>(reader: &mut T) -> Vec<u8> {
     while output_data_vector.len() < output_data_vector.capacity() {
         // If we ran out of usable operations, read a new code byte
         if operations_left == 0 {
-            current_code_byte = read_to_u8(reader);
+            current_code_byte = fancy_read::read_to_u8(reader);
             operations_left = 8;
         }
         // Check bit per bit the current code byte
         if (current_code_byte & 2u8.pow(operations_left - 1)) == 2u8.pow(operations_left - 1) {
             // Straight copy
-            let to_copy: u8 = read_to_u8(reader);
+            let to_copy: u8 = fancy_read::read_to_u8(reader);
             output_data_vector.push(to_copy);
         } else {
             // Compressed data
@@ -66,7 +55,7 @@ pub fn decompress<T: std::io::Read + std::io::Seek>(reader: &mut T) -> Vec<u8> {
             let mut nb_bytes_to_copy: u32 = (bytes[0] as u32) >> 4;
             if nb_bytes_to_copy == 0 {
                 // If needed, read a third byte
-                let byte3: u8 = read_to_u8(reader);
+                let byte3: u8 = fancy_read::read_to_u8(reader);
                 nb_bytes_to_copy = (byte3 as u32) + 0x12;
             } else {
                 nb_bytes_to_copy = nb_bytes_to_copy + 2;

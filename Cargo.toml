@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Marime_Gui <lepro.guillaume@gmail.com>"]
 
 [dependencies]
+fancy_read = { git = "https://github.com/MarimeGui/fancy_read" }
