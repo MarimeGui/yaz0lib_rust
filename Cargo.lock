@@ -1,0 +1,14 @@
+[root]
+name = "yaz0lib_rust"
+version = "0.1.0"
+dependencies = [
+ "fancy_read 0.1.0 (git+https://github.com/MarimeGui/fancy_read)",
+]
+
+[[package]]
+name = "fancy_read"
+version = "0.1.0"
+source = "git+https://github.com/MarimeGui/fancy_read#597f8846e75764f9d5be27bbde39c2b3b3da95af"
+
+[metadata]
+"checksum fancy_read 0.1.0 (git+https://github.com/MarimeGui/fancy_read)" = "<none>"

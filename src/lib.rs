@@ -1,7 +1,6 @@
 extern crate fancy_read;
 
 use std::str::from_utf8;
-use std::mem;
 use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
@@ -17,7 +16,7 @@ pub fn decompress<T: Read + Seek>(reader: &mut T) -> Vec<u8> {
     }
 
     // Read the output data size
-    let output_buffer_size: u32 = fancy_read::read_to_u32_le(reader);
+    let output_buffer_size: u32 = fancy_read::read_be_to_u32(reader);
 
     // Go passed the padding
     reader.seek(SeekFrom::Current(8)).expect("Failed to read");
