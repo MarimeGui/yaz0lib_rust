@@ -11,15 +11,13 @@ pub fn decompress<T: Read + Seek>(reader: &mut T) -> Vec<u8> {
     let mut temp: [u8; 4] = [0; 4];
     reader.read_exact(&mut temp[..]).expect("Failed to read");
     let magic_number_str = from_utf8(&temp).unwrap();
-    if magic_number_str != "Yaz0" {
-        panic!("Magic Number did not match, probably not a Yaz0 compressed file.");
-    }
+    assert_eq!(magic_number_str, "Yaz0", "Magic Number did not match");
 
     // Read the output data size
     let output_buffer_size: u32 = fancy_read::read_be_to_u32(reader);
 
     // Go passed the padding
-    reader.seek(SeekFrom::Current(8)).expect("Failed to read");
+    reader.seek(SeekFrom::Current(8)).expect("Failed to seek");
 
     // Create the Vector object responsible for holding the output data
     let mut output_data_vector: Vec<u8> = Vec::with_capacity(output_buffer_size as usize);
@@ -66,7 +64,7 @@ pub fn decompress<T: Read + Seek>(reader: &mut T) -> Vec<u8> {
                 output_data_vector.push(to_copy);
             }
         }
-        operations_left = operations_left - 1
+        operations_left = operations_left - 1;
     }
     // Return the output data
     output_data_vector
@@ -78,13 +76,21 @@ fn test_decompress() {
     use std::io::BufReader;
     use std::io::prelude::*;
 
+    // Open input file
     let input_file_reader = File::open("test_files/input").expect("File not found");
     let mut input_file_buf_reader = BufReader::new(input_file_reader);
+
+    // Decompress it
     let decompressed_data = decompress(&mut input_file_buf_reader);
+
+    // Open expected results file
     let expected_output_file_reader = File::open("test_files/expected_ouput").expect("File not found");
     let mut expected_output_file_buf_reader = BufReader::new(expected_output_file_reader);
+
+    // Load it all into memory
     let correct_decompressed_data = expected_output_file_buf_reader.fill_buf();
 
+    // Check for any different byte
     let mut pos = 0;
     for byte in correct_decompressed_data {
         assert_eq!(byte[0], decompressed_data[pos]);
