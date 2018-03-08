@@ -9,7 +9,7 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
     // Checks the Yaz0 Magic Number
     let mut magic_number: [u8; 4] = [0; 4];
     reader.read_exact(&mut magic_number)?;
-    assert_eq!(magic_number, [b'Y', b'A', b'Z', b'0'], "Magic Number did not match");
+    assert_eq!(magic_number, [b'Y', b'a', b'z', b'0'], "Magic Number did not match");
 
     // Read the output data size
     let output_buffer_size: u32 = reader.read_be_to_u32()?;
