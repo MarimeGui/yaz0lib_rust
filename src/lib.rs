@@ -8,7 +8,7 @@ use std::error::Error;
 pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>> {
     // Checks the Yaz0 Magic Number
     let mut magic_number: [u8; 4] = [0; 4];
-    reader.read_exact(&mut temp)?;
+    reader.read_exact(&mut magic_number)?;
     assert_eq!(magic_number, [b'Y', b'A', b'Z', b'0'], "Magic Number did not match");
 
     // Read the output data size
@@ -28,7 +28,7 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
     while output_data_vector.len() < output_data_vector.capacity() {
         // If we ran out of usable operations, read a new code byte
         if operations_left == 0 {
-            current_code_byte = reader.read_to_u8();
+            current_code_byte = reader.read_to_u8()?;
             operations_left = 8;
         }
         // Check bit per bit the current code byte
@@ -91,7 +91,7 @@ fn test_decompress() {
     // Check for any different byte
     let mut pos = 0;
     for byte in correct_decompressed_data {
-        assert_eq!(byte[0], decompressed_data[pos]);
+        assert_eq!(byte, &decompressed_data[pos]);
         pos = pos + 1;
     }
 }

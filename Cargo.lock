@@ -5,7 +5,7 @@ source = "git+https://github.com/MarimeGui/ez_io#dcea50411cfe9d41c028da9950df4b8
 
 [[package]]
 name = "yaz0lib_rust"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "ez_io 0.1.0 (git+https://github.com/MarimeGui/ez_io)",
 ]
