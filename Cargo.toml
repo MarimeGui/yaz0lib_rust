@@ -1,6 +1,6 @@
 [package]
 name = "yaz0lib"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Marime_Gui <lepro.guillaume@gmail.com>"]
 
 [lib]
