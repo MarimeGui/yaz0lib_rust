@@ -1,15 +1,15 @@
 extern crate ez_io;
+extern crate magic_number;
 
 use ez_io::ReadE;
+use magic_number::check_magic_number;
+use std::error::Error;
 use std::io::SeekFrom;
 use std::io::{Read, Seek};
-use std::error::Error;
 
 pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>> {
     // Checks the Yaz0 Magic Number
-    let mut magic_number: [u8; 4] = [0; 4];
-    reader.read_exact(&mut magic_number)?;
-    assert_eq!(magic_number, [b'Y', b'a', b'z', b'0'], "Magic Number did not match");
+    check_magic_number(reader, vec![b'Y', b'a', b'z', b'0'])?;
 
     // Read the output data size
     let output_buffer_size: u32 = reader.read_be_to_u32()?;
@@ -71,8 +71,8 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
 #[test]
 fn test_decompress() {
     use std::fs::File;
-    use std::io::BufReader;
     use std::io::prelude::*;
+    use std::io::BufReader;
 
     // Open input file
     let input_file_reader = File::open("test_files/input").expect("File not found");
@@ -82,7 +82,8 @@ fn test_decompress() {
     let decompressed_data = decompress(&mut input_file_buf_reader).unwrap();
 
     // Open expected results file
-    let expected_output_file_reader = File::open("test_files/expected_output").expect("File not found");
+    let expected_output_file_reader =
+        File::open("test_files/expected_output").expect("File not found");
     let mut expected_output_file_buf_reader = BufReader::new(expected_output_file_reader);
 
     // Load it all into memory

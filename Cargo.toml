@@ -1,7 +1,12 @@
 [package]
-name = "yaz0lib_rust"
+name = "yaz0lib"
 version = "0.1.1"
 authors = ["Marime_Gui <lepro.guillaume@gmail.com>"]
 
+[lib]
+name = "yaz0lib"
+
 [dependencies]
+clap = "2.31.2"
 ez_io = { git = "https://github.com/MarimeGui/ez_io" }
+magic_number = { git = "https://github.com/MarimeGui/magic_number_rust.git" }
