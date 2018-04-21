@@ -43,17 +43,17 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
             reader.read_exact(&mut bytes[..])?;
 
             // Calculate where to copy from
-            let dist: u32 = (((bytes[0] as u32) & 0xF) << 8) | (bytes[1] as u32);
+            let dist: u32 = ((u32::from(bytes[0]) & 0xF) << 8) | u32::from(bytes[1]);
             let copy_from: u32 = (output_data_vector.len() as u32) - (dist + 1);
 
             // Calculate how many bytes need to copy
-            let mut nb_bytes_to_copy: u32 = (bytes[0] as u32) >> 4;
+            let mut nb_bytes_to_copy: u32 = u32::from(bytes[0]) >> 4;
             if nb_bytes_to_copy == 0 {
                 // If needed, read a third byte
                 let byte3: u8 = reader.read_to_u8()?;
-                nb_bytes_to_copy = (byte3 as u32) + 0x12;
+                nb_bytes_to_copy = u32::from(byte3) + 0x12;
             } else {
-                nb_bytes_to_copy = nb_bytes_to_copy + 2;
+                nb_bytes_to_copy += 2;
             }
 
             // Copy the data
@@ -62,7 +62,7 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
                 output_data_vector.push(to_copy);
             }
         }
-        operations_left = operations_left - 1;
+        operations_left -= 1;
     }
     // Return the output data
     Ok(output_data_vector)
@@ -71,23 +71,30 @@ pub fn decompress<R: Read + Seek>(reader: &mut R) -> Result<Vec<u8>, Box<Error>>
 #[test]
 fn test_decompress() {
     use std::fs::File;
-    use std::io::prelude::*;
-    use std::io::BufReader;
+    use std::io::{BufRead, BufReader};
+    use std::path::Path;
 
     // Open input file
-    let input_file_reader = File::open("test_files/input").expect("File not found");
-    let mut input_file_buf_reader = BufReader::new(input_file_reader);
+    let input_file_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("test_files")
+        .join("input");
+    println!("{:?}", input_file_path);
+    let ref mut input_file_reader =
+        BufReader::new(File::open(input_file_path).expect("File not found"));
 
     // Decompress it
-    let decompressed_data = decompress(&mut input_file_buf_reader).unwrap();
+    let decompressed_data = decompress(input_file_reader).unwrap();
 
     // Open expected results file
-    let expected_output_file_reader =
-        File::open("test_files/expected_output").expect("File not found");
-    let mut expected_output_file_buf_reader = BufReader::new(expected_output_file_reader);
+    let expected_output_file_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("test_files")
+        .join("expected_output");
+    println!("{:?}", expected_output_file_path);
+    let ref mut expected_output_file_reader =
+        BufReader::new(File::open(expected_output_file_path).expect("File not found"));
 
     // Load it all into memory
-    let correct_decompressed_data = expected_output_file_buf_reader.fill_buf().unwrap();
+    let correct_decompressed_data = expected_output_file_reader.fill_buf().unwrap();
 
     // Check for any different byte
     let mut pos = 0;
